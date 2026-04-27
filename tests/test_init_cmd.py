@@ -83,3 +83,52 @@ def test_init_python_api(tmp_path, monkeypatch):
     assert result.exit_code == 0
     content = (project_dir / "CLAUDE.md").read_text()
     assert "pytest" in content
+
+
+def test_init_creates_vibe_directory(tmp_path, monkeypatch):
+    project_dir, _ = _setup_env(tmp_path, monkeypatch)
+    runner = CliRunner()
+    result = runner.invoke(cli, ["init"], input="1\n1\n1\n")
+    assert result.exit_code == 0
+    assert (project_dir / ".vibe").is_dir()
+
+
+def test_init_runs_index(tmp_path, monkeypatch):
+    project_dir, _ = _setup_env(tmp_path, monkeypatch)
+    # Add a source file so index has something to scan
+    (project_dir / "src").mkdir()
+    (project_dir / "src" / "app.ts").write_text("export function hello() {}\n")
+    runner = CliRunner()
+    result = runner.invoke(cli, ["init"], input="1\n1\n1\n")
+    assert result.exit_code == 0
+    assert (project_dir / ".vibe" / "codebase.md").exists()
+
+
+def test_init_creates_error_memory(tmp_path, monkeypatch):
+    project_dir, _ = _setup_env(tmp_path, monkeypatch)
+    runner = CliRunner()
+    result = runner.invoke(cli, ["init"], input="1\n1\n1\n")
+    assert result.exit_code == 0
+    assert (project_dir / ".vibe" / "errors.md").exists()
+    content = (project_dir / ".vibe" / "errors.md").read_text()
+    assert "Error Memory" in content
+
+
+def test_init_installs_prompt_templates(tmp_path, monkeypatch):
+    project_dir, _ = _setup_env(tmp_path, monkeypatch)
+    runner = CliRunner()
+    result = runner.invoke(cli, ["init"], input="1\n1\n1\n")
+    assert result.exit_code == 0
+    prompts = project_dir / ".vibe" / "prompts"
+    assert prompts.is_dir()
+    assert (prompts / "fix-bug.md").exists()
+
+
+def test_init_adds_session_context_to_gitignore(tmp_path, monkeypatch):
+    project_dir, _ = _setup_env(tmp_path, monkeypatch)
+    runner = CliRunner()
+    result = runner.invoke(cli, ["init"], input="1\n1\n1\n")
+    assert result.exit_code == 0
+    gitignore = project_dir / ".gitignore"
+    assert gitignore.exists()
+    assert "session-context.md" in gitignore.read_text()

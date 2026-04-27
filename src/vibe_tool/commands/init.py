@@ -6,6 +6,9 @@ import click
 from rich.console import Console
 
 from vibe_tool.config import VibeConfig
+from vibe_tool.errors import HEADER as ERRORS_HEADER
+from vibe_tool.indexer import scan_project, render_index
+from vibe_tool.prompts import install_templates
 from vibe_tool.templates import (
     get_git_hook_pre_commit,
     get_git_hook_pre_push,
@@ -109,5 +112,38 @@ def init():
         stack=stack,
     )
     console.print("[green]Registered[/green] project in vibe index")
+
+    # 8. Create .vibe/ directory with v2 context intelligence
+    vibe_dir = project_dir / ".vibe"
+    vibe_dir.mkdir(exist_ok=True)
+
+    # 9. Run codebase index
+    scanned = scan_project(project_dir)
+    if scanned:
+        md = render_index(scanned, project_dir)
+        (vibe_dir / "codebase.md").write_text(md)
+        console.print(f"[green]Indexed[/green] {len(scanned)} source files")
+    else:
+        console.print("[dim]No source files to index yet[/dim]")
+
+    # 10. Create empty error memory
+    errors_file = vibe_dir / "errors.md"
+    if not errors_file.exists():
+        errors_file.write_text(ERRORS_HEADER)
+    console.print("[green]Created[/green] error memory (.vibe/errors.md)")
+
+    # 11. Install prompt templates
+    install_templates(vibe_dir / "prompts")
+    console.print("[green]Installed[/green] prompt templates (.vibe/prompts/)")
+
+    # 12. Add session-context.md to .gitignore
+    gitignore = project_dir / ".gitignore"
+    gitignore_content = gitignore.read_text() if gitignore.exists() else ""
+    if ".vibe/session-context.md" not in gitignore_content:
+        with open(gitignore, "a") as f:
+            if gitignore_content and not gitignore_content.endswith("\n"):
+                f.write("\n")
+            f.write("# Vibe tool ephemeral context\n.vibe/session-context.md\n.vibe/.session-start-sha\n")
+    console.print("[green]Updated[/green] .gitignore")
 
     console.print(f"\n[bold green]Project initialized.[/bold green] Open Claude Code and start building.")
