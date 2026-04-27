@@ -136,3 +136,57 @@ jobs:
       - name: Test
         run: npm test
 """
+
+
+def get_hook_pre_session() -> str:
+    return """#!/bin/sh
+# Vibe tool pre-session hook
+# Syncs context from remote and generates temporal session context
+
+# Pull latest context from remote
+vibe sync pull 2>/dev/null
+
+# Generate ephemeral session context
+python -c "
+from pathlib import Path
+from vibe_tool.preloader import write_session_context, record_session_start
+project = Path.cwd()
+write_session_context(project)
+record_session_start(project)
+" 2>/dev/null
+
+exit 0
+"""
+
+
+def get_hook_post_session() -> str:
+    return """#!/bin/sh
+# Vibe tool post-session hook
+# Generates handoff notes and syncs context to remote
+
+# Generate handoff from session changes
+python -c "
+from pathlib import Path
+from vibe_tool.handoff import write_handoff
+project = Path.cwd()
+sha_file = project / '.vibe' / '.session-start-sha'
+start_sha = sha_file.read_text().strip() if sha_file.exists() else None
+write_handoff(project, start_sha)
+" 2>/dev/null
+
+# Sync context to remote
+vibe sync push 2>/dev/null
+
+exit 0
+"""
+
+
+def get_hook_post_commit() -> str:
+    return """#!/bin/sh
+# Vibe tool post-commit hook
+# Updates codebase index after each commit
+
+vibe index 2>/dev/null
+
+exit 0
+"""
