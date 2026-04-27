@@ -1,6 +1,7 @@
 import click
 
 from vibe_tool.commands.client import client
+from vibe_tool.commands.index import index
 from vibe_tool.commands.init import init
 from vibe_tool.commands.setup import setup
 from vibe_tool.commands.status import status
@@ -18,6 +19,7 @@ def cli():
 
 
 cli.add_command(client)
+cli.add_command(index)
 cli.add_command(init)
 cli.add_command(setup)
 cli.add_command(status)
