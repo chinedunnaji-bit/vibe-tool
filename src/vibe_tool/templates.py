@@ -13,6 +13,13 @@ def get_global_claude_md_addition() -> str:
 8. Update Claude Code memory after completing significant milestones.
 9. Write behavioral tests — test what the code does, not how it does it. Test inputs and outputs, not internal implementation details.
 10. If unsure about a requirement, ask — do not guess and ship.
+
+## Context Loading Rules (added by vibe-tool)
+
+11. At the start of every session, read the `.vibe/` directory if it exists. Read in order: codebase.md, handoff.md, errors.md, session-context.md.
+12. The codebase index (.vibe/codebase.md) is a navigation aid, not a source of truth. Use it to find files fast, then read the actual source before making changes. If the index conflicts with actual code, trust the code and re-run `vibe index`.
+13. When you encounter a non-obvious error, append it to .vibe/errors.md using the ERR-NNN format with: when, cause, and fix.
+14. After each session milestone, ensure .vibe/codebase.md still reflects any new or changed files, exports, or patterns.
 """
 
 

@@ -68,3 +68,21 @@ def test_setup_adds_first_client(tmp_path, monkeypatch):
     result = runner.invoke(cli, ["setup"], input="acme-corp\nclaude-1\n")
     assert result.exit_code == 0
     assert "acme-corp" in result.output
+
+
+def test_setup_adds_context_loading_rules(tmp_path, monkeypatch):
+    vibe_dir = tmp_path / ".vibe"
+    claude_dir = tmp_path / ".claude"
+    claude_dir.mkdir()
+    claude_dir.joinpath("CLAUDE.md").write_text("# Existing\n")
+
+    monkeypatch.setenv("VIBE_CONFIG_DIR", str(vibe_dir))
+    monkeypatch.setenv("CLAUDE_CONFIG_DIR", str(claude_dir))
+
+    runner = CliRunner()
+    result = runner.invoke(cli, ["setup"], input="acme\nclaude-1\n")
+    assert result.exit_code == 0
+
+    content = claude_dir.joinpath("CLAUDE.md").read_text()
+    assert ".vibe/" in content
+    assert "codebase.md" in content

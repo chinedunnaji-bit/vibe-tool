@@ -44,3 +44,11 @@ def test_github_actions_api_python():
     content = get_github_actions_ci("api", "python")
     assert "pytest" in content
     assert "ruff" in content or "lint" in content
+
+
+def test_global_claude_md_contains_context_loading_rules():
+    content = get_global_claude_md_addition()
+    assert "read the `.vibe/` directory" in content or ".vibe/" in content
+    assert "codebase.md" in content
+    assert "errors.md" in content
+    assert "navigation aid" in content.lower() or "not a source of truth" in content.lower()
