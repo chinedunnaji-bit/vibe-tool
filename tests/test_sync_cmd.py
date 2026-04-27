@@ -66,3 +66,30 @@ def test_sync_not_a_git_repo(tmp_path, monkeypatch):
     runner = CliRunner()
     result = runner.invoke(cli, ["sync"])
     assert result.exit_code != 0 or "not a git" in result.output.lower()
+
+
+def test_sync_includes_vibe_directory(tmp_path, monkeypatch):
+    project_dir = tmp_path / "my-project"
+    _make_git_project(project_dir)
+
+    monkeypatch.setenv("VIBE_CONFIG_DIR", str(tmp_path / ".vibe"))
+    monkeypatch.chdir(project_dir)
+
+    # Create .vibe/ with context files
+    vibe_dir = project_dir / ".vibe"
+    vibe_dir.mkdir()
+    (vibe_dir / "codebase.md").write_text("# Index\n")
+    (vibe_dir / "errors.md").write_text("# Errors\n")
+    (vibe_dir / "handoff.md").write_text("# Handoff\n")
+
+    runner = CliRunner()
+    result = runner.invoke(cli, ["sync", "push"])
+    assert result.exit_code == 0
+    assert "Committed" in result.output
+
+    # Verify .vibe files are committed
+    log = subprocess.run(
+        ["git", "show", "--stat", "HEAD"],
+        cwd=project_dir, capture_output=True, text=True
+    )
+    assert ".vibe/" in log.stdout

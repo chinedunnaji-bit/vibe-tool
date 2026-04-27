@@ -6,7 +6,7 @@ from rich.console import Console
 
 console = Console()
 
-CONTEXT_FILES = ["CLAUDE.md", ".claude"]
+CONTEXT_FILES = ["CLAUDE.md", ".claude", ".vibe"]
 
 
 def _run_git(args: list[str], cwd: Path) -> subprocess.CompletedProcess:
