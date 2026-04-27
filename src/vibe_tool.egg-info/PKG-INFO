@@ -1,0 +1,7 @@
+Metadata-Version: 2.4
+Name: vibe-tool
+Version: 0.1.0
+Summary: CLI tool for Claude Code productivity — quality gates and context continuity
+Requires-Python: >=3.10
+Requires-Dist: click>=8.1
+Requires-Dist: rich>=13.0
