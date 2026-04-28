@@ -22,9 +22,6 @@ def get_claude_dir() -> Path:
 
 def _ensure_vibe_on_path():
     """Ensure the 'vibe' command is accessible on PATH."""
-    if shutil.which("vibe"):
-        return  # already on PATH
-
     # Find where pip installed the vibe script
     user_bin = Path.home() / "Library" / "Python" / f"{sys.version_info.major}.{sys.version_info.minor}" / "bin"
     if not user_bin.exists():
@@ -43,10 +40,11 @@ def _ensure_vibe_on_path():
         rc_file = Path.home() / ".profile"
 
     rc_content = rc_file.read_text() if rc_file.exists() else ""
-    path_line = f'export PATH="$PATH:{user_bin}"'
 
     if str(user_bin) in rc_content:
         return  # already added
+
+    path_line = f'export PATH="$PATH:{user_bin}"'
 
     with open(rc_file, "a") as f:
         f.write(f'\n# Added by vibe-tool\n{path_line}\n')
