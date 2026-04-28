@@ -50,6 +50,43 @@ vibe client add --name "my-client" --account "claude-account1"
 vibe client list
 ```
 
+### Index your codebase
+
+```bash
+vibe index              # Pattern-based scan (fast, free)
+vibe index --deep       # Claude-powered analysis (richer)
+```
+
+Generates `.vibe/codebase.md` — a complete map of your codebase that Claude reads instead of exploring files one by one.
+
+### Track errors
+
+```bash
+vibe error add          # Record an error and its solution
+vibe error list         # View all recorded errors
+```
+
+Claude also writes to `.vibe/errors.md` automatically when it debugs non-obvious issues.
+
+### Use prompt templates
+
+```bash
+vibe prompt list              # See available templates
+vibe prompt show fix-bug      # View a template
+vibe prompt copy add-endpoint # Copy to clipboard
+vibe prompt create deploy     # Create custom template
+```
+
+## How context flows
+
+When you start a Claude Code session:
+1. Claude reads `.vibe/codebase.md` — knows your entire codebase structure
+2. Claude reads `.vibe/handoff.md` — knows what happened last session
+3. Claude reads `.vibe/errors.md` — knows past gotchas
+4. Claude reads `.vibe/session-context.md` — knows current git state and env
+
+Result: Claude starts writing code immediately instead of spending 60%+ of time exploring your codebase.
+
 ## What it does
 
 1. **Quality gates** — Every project gets tests, git hooks, and CI from day one. Claude Code is instructed to always write tests, always run them, and never claim "done" without proof.
