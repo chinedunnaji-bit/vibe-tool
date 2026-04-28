@@ -1,4 +1,7 @@
 import os
+import shutil
+import subprocess
+import sys
 from pathlib import Path
 
 import click
@@ -17,12 +20,50 @@ def get_claude_dir() -> Path:
     return Path(env) if env else Path.home() / ".claude"
 
 
+def _ensure_vibe_on_path():
+    """Ensure the 'vibe' command is accessible on PATH."""
+    if shutil.which("vibe"):
+        return  # already on PATH
+
+    # Find where pip installed the vibe script
+    user_bin = Path.home() / "Library" / "Python" / f"{sys.version_info.major}.{sys.version_info.minor}" / "bin"
+    if not user_bin.exists():
+        user_bin = Path.home() / ".local" / "bin"  # Linux
+
+    if not (user_bin / "vibe").exists():
+        return  # can't find it, skip
+
+    # Detect shell config file
+    shell = os.environ.get("SHELL", "")
+    if "zsh" in shell:
+        rc_file = Path.home() / ".zshrc"
+    elif "bash" in shell:
+        rc_file = Path.home() / ".bashrc"
+    else:
+        rc_file = Path.home() / ".profile"
+
+    rc_content = rc_file.read_text() if rc_file.exists() else ""
+    path_line = f'export PATH="$PATH:{user_bin}"'
+
+    if str(user_bin) in rc_content:
+        return  # already added
+
+    with open(rc_file, "a") as f:
+        f.write(f'\n# Added by vibe-tool\n{path_line}\n')
+
+    console.print(f"[green]Added[/green] {user_bin} to PATH in {rc_file.name}")
+    console.print("[yellow]Restart your terminal[/yellow] (or run [bold]source ~/{rc_file.name}[/bold]) for `vibe` to work")
+
+
 @click.command()
 def setup():
     """One-time machine setup: global CLAUDE.md rules, hooks, and config."""
     config_dir = os.environ.get("VIBE_CONFIG_DIR")
     config = VibeConfig(config_dir) if config_dir else VibeConfig()
     config.ensure_dirs()
+
+    # Ensure vibe is on PATH
+    _ensure_vibe_on_path()
 
     # Augment global CLAUDE.md
     claude_dir = get_claude_dir()

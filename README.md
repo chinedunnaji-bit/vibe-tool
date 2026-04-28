@@ -5,25 +5,16 @@ CLI tool for Claude Code productivity — automated quality gates and context co
 ## Install
 
 ```bash
-# Recommended — installs globally with PATH handled automatically
-pipx install git+https://github.com/chinedunnaji-bit/vibe-tool.git
-
-# Alternative — standard pip
-pip install git+https://github.com/chinedunnaji-bit/vibe-tool.git
-```
-
-After install, run `vibe --help` to verify. If pip warns about PATH, you can always use:
-
-```bash
-python3 -m vibe_tool --help
+pip3 install git+https://github.com/chinedunnaji-bit/vibe-tool.git
 ```
 
 ## Setup (one-time per machine)
 
 ```bash
-vibe setup
-# or: python3 -m vibe_tool setup
+python3 -m vibe_tool setup
 ```
+
+This adds `vibe` to your PATH automatically, installs quality rules in `~/.claude/CLAUDE.md`, and prompts for your first client. **Restart your terminal** after setup, then `vibe` works everywhere.
 
 This:
 - Adds mandatory quality rules to your global `~/.claude/CLAUDE.md`
