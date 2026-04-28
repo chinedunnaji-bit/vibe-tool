@@ -50,7 +50,7 @@ def _ensure_vibe_on_path():
         f.write(f'\n# Added by vibe-tool\n{path_line}\n')
 
     console.print(f"[green]Added[/green] {user_bin} to PATH in {rc_file.name}")
-    console.print("[yellow]Restart your terminal[/yellow] (or run [bold]source ~/{rc_file.name}[/bold]) for `vibe` to work")
+    console.print(f"[yellow]Restart your terminal[/yellow] (or run [bold]source ~/{rc_file.name}[/bold]) for `vibe` to work")
 
 
 @click.command()
