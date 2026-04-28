@@ -61,7 +61,7 @@ def test_full_v2_workflow(tmp_path, monkeypatch):
     project, runner = _setup(tmp_path, monkeypatch)
 
     # 1. Init project (should create .vibe/ with all v2 features)
-    result = runner.invoke(cli, ["init"], input="1\n1\n1\n")
+    result = runner.invoke(cli, ["init"])
     assert result.exit_code == 0
 
     # Verify .vibe/ structure

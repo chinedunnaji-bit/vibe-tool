@@ -40,7 +40,7 @@ def test_full_workflow(tmp_path, monkeypatch):
     subprocess.run(["git", "config", "user.name", "Test"], cwd=project_dir, check=True)
     monkeypatch.chdir(project_dir)
 
-    result = runner.invoke(cli, ["init"], input="1\n1\n1\n")
+    result = runner.invoke(cli, ["init"], input="1\n")
     assert result.exit_code == 0
     assert (project_dir / "CLAUDE.md").exists()
     assert (project_dir / ".github" / "workflows" / "ci.yml").exists()
