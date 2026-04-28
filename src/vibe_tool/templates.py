@@ -80,10 +80,22 @@ def _get_commands_for_stack(project_type: str, stack: str) -> dict:
 
 
 def get_git_hook_pre_commit(project_type: str, stack: str) -> str:
-    if stack in ("python", "fastapi", "flask"):
+    if stack in ("python", "fastapi", "flask", "django"):
         return """#!/bin/sh
 echo "Running lint checks..."
 ruff check . || { echo "Lint failed. Fix errors before committing."; exit 1; }
+echo "Lint passed."
+"""
+    if stack == "go":
+        return """#!/bin/sh
+echo "Running lint checks..."
+golangci-lint run || go vet ./... || { echo "Lint failed. Fix errors before committing."; exit 1; }
+echo "Lint passed."
+"""
+    if stack == "rust":
+        return """#!/bin/sh
+echo "Running lint checks..."
+cargo clippy -- -D warnings || { echo "Lint failed. Fix errors before committing."; exit 1; }
 echo "Lint passed."
 """
     return """#!/bin/sh
@@ -94,10 +106,22 @@ echo "Lint passed."
 
 
 def get_git_hook_pre_push(project_type: str, stack: str) -> str:
-    if stack in ("python", "fastapi", "flask"):
+    if stack in ("python", "fastapi", "flask", "django"):
         return """#!/bin/sh
 echo "Running tests before push..."
 pytest || { echo "Tests failed. Fix before pushing."; exit 1; }
+echo "All tests passed."
+"""
+    if stack == "go":
+        return """#!/bin/sh
+echo "Running tests before push..."
+go test ./... || { echo "Tests failed. Fix before pushing."; exit 1; }
+echo "All tests passed."
+"""
+    if stack == "rust":
+        return """#!/bin/sh
+echo "Running tests before push..."
+cargo test || { echo "Tests failed. Fix before pushing."; exit 1; }
 echo "All tests passed."
 """
     return """#!/bin/sh
@@ -107,9 +131,8 @@ echo "All tests passed."
 """
 
 
-def get_github_actions_ci(project_type: str, stack: str) -> str:
-    if stack in ("python", "fastapi", "flask"):
-        return """name: CI
+def _python_ci() -> str:
+    return """name: CI
 
 on:
   push:
@@ -131,6 +154,9 @@ jobs:
       - name: Test
         run: pytest -v
 """
+
+
+def _node_ci() -> str:
     return """name: CI
 
 on:
@@ -153,6 +179,85 @@ jobs:
       - name: Test
         run: npm test
 """
+
+
+def get_github_actions_ci(project_type: str, stack: str) -> str:
+    if stack in ("python", "fastapi", "flask", "django"):
+        return _python_ci()
+    if stack == "go":
+        return """name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+      - name: Lint
+        run: golangci-lint run || go vet ./...
+      - name: Test
+        run: go test ./...
+"""
+    if stack == "rust":
+        return """name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Lint
+        run: cargo clippy -- -D warnings
+      - name: Test
+        run: cargo test
+"""
+    if stack == "vite-fastapi":
+        return """name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: pip install -e ".[dev]" 2>/dev/null || pip install -e .
+      - run: npm ci
+      - name: Lint (Python)
+        run: ruff check .
+      - name: Lint (JS)
+        run: npm run lint
+      - name: Test (Python)
+        run: pytest -v
+      - name: Test (JS)
+        run: npm test
+"""
+    return _node_ci()
 
 
 def get_hook_pre_session() -> str:
