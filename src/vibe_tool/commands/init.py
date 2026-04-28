@@ -21,13 +21,19 @@ console = Console()
 PROJECT_TYPES = [
     ("web", "Web app"),
     ("mobile", "Mobile app"),
-    ("api", "API"),
+    ("api", "API / Backend"),
+    ("cli", "CLI tool"),
+    ("fullstack", "Full-stack (web + API)"),
+    ("other", "Other"),
 ]
 
 STACKS = {
-    "web": [("next", "Next.js"), ("vite", "React + Vite")],
-    "mobile": [("expo", "Expo / React Native")],
-    "api": [("express", "Express"), ("fastify", "Fastify"), ("hono", "Hono"), ("fastapi", "FastAPI (Python)"), ("flask", "Flask (Python)")],
+    "web": [("next", "Next.js"), ("vite", "React + Vite"), ("svelte", "SvelteKit"), ("other", "Other")],
+    "mobile": [("expo", "Expo / React Native"), ("other", "Other")],
+    "api": [("express", "Express"), ("fastify", "Fastify"), ("hono", "Hono"), ("fastapi", "FastAPI (Python)"), ("flask", "Flask (Python)"), ("django", "Django (Python)"), ("other", "Other")],
+    "cli": [("python", "Python (Click/Typer)"), ("node", "Node.js"), ("go", "Go"), ("rust", "Rust"), ("other", "Other")],
+    "fullstack": [("next", "Next.js (full-stack)"), ("vite-express", "React + Express"), ("vite-fastapi", "React + FastAPI"), ("other", "Other")],
+    "other": [("python", "Python"), ("node", "Node.js"), ("go", "Go"), ("rust", "Rust"), ("other", "Other")],
 }
 
 

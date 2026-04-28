@@ -47,18 +47,35 @@ def get_project_claude_md(name: str, project_type: str, stack: str) -> str:
 
 
 def _get_commands_for_stack(project_type: str, stack: str) -> dict:
+    python_cmds = {"dev": "uvicorn main:app --reload", "test": "pytest", "lint": "ruff check ."}
+    node_cmds = {"dev": "npm run dev", "test": "npm test", "lint": "npm run lint"}
     commands = {
-        ("web", "next"): {"dev": "npm run dev", "test": "npm test", "lint": "npm run lint"},
+        ("web", "next"): node_cmds,
         ("web", "vite"): {"dev": "npm run dev", "test": "npx vitest run", "lint": "npm run lint"},
+        ("web", "svelte"): node_cmds,
         ("mobile", "react-native"): {"dev": "npx expo start", "test": "npm test", "lint": "npm run lint"},
         ("mobile", "expo"): {"dev": "npx expo start", "test": "npm test", "lint": "npm run lint"},
         ("api", "express"): {"dev": "npm run dev", "test": "npx vitest run", "lint": "npm run lint"},
         ("api", "fastify"): {"dev": "npm run dev", "test": "npx vitest run", "lint": "npm run lint"},
         ("api", "hono"): {"dev": "npm run dev", "test": "npx vitest run", "lint": "npm run lint"},
-        ("api", "python"): {"dev": "uvicorn main:app --reload", "test": "pytest", "lint": "ruff check ."},
-        ("api", "fastapi"): {"dev": "uvicorn main:app --reload", "test": "pytest", "lint": "ruff check ."},
+        ("api", "python"): python_cmds,
+        ("api", "fastapi"): python_cmds,
         ("api", "flask"): {"dev": "flask run --reload", "test": "pytest", "lint": "ruff check ."},
+        ("api", "django"): {"dev": "python manage.py runserver", "test": "pytest", "lint": "ruff check ."},
+        ("cli", "python"): {"dev": "python -m <module>", "test": "pytest", "lint": "ruff check ."},
+        ("cli", "node"): node_cmds,
+        ("cli", "go"): {"dev": "go run .", "test": "go test ./...", "lint": "golangci-lint run"},
+        ("cli", "rust"): {"dev": "cargo run", "test": "cargo test", "lint": "cargo clippy"},
+        ("fullstack", "next"): node_cmds,
+        ("fullstack", "vite-express"): node_cmds,
+        ("fullstack", "vite-fastapi"): {"dev": "npm run dev & uvicorn main:app --reload", "test": "pytest && npm test", "lint": "ruff check . && npm run lint"},
     }
+    # Fallback: guess from stack name
+    if (project_type, stack) not in commands:
+        if stack in ("python", "fastapi", "flask", "django"):
+            return python_cmds
+        if stack in ("node", "express", "next", "vite"):
+            return node_cmds
     return commands.get((project_type, stack), {"dev": "echo 'configure dev command'", "test": "echo 'configure test command'", "lint": "echo 'configure lint command'"})
 
 
